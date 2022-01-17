@@ -11,6 +11,8 @@ const _ = new HelperApi();
 
 const emailOutreach = require("./src/emailOutreach");
 
+const today = moment(new Date()).format("MM/DD/YYYY");
+
 exports.emailCampaignApollo = async (req, res) => {
     try {
         const getCampaigns = await Airtable.getCampaigns("Email - Apollo");
@@ -18,9 +20,22 @@ exports.emailCampaignApollo = async (req, res) => {
 
         const arrayEmailOutreach = accounts.map((account) => emailOutreach(account));
 
+        // results = [{...account, status: "..."}]
         const results = await Promise.all(arrayEmailOutreach);
 
-        // console.log(results);
+        const updateAccounts = results.map((acc) => ({
+            recordID: acc.recordID,
+            Status: acc.status,
+            "Last Updated": today,
+        }));
+
+        const airtableFormatedRecords = await Airtable.formatAirtableContacts(updateAccounts);
+
+        // batch update contacts in AT with apollo id as id
+        let batches = Math.ceil(airtableFormatedRecords.length / 10);
+        for (let batch = 1; batch <= batches; batch++) {
+            await Airtable.updateContacts("appGB7S9Wknu6MiQb", airtableFormatedRecords);
+        }
 
         // for (let result of results) {
         //     await Airtable.updateCampaign(result.recordID, {

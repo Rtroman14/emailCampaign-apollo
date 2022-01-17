@@ -15,13 +15,10 @@ const emailOutreach = require("./src/emailOutreach");
 
 (async () => {
     try {
-        const contacts = await Airtable.getContacts("appsqByR9Lsaylcd3", "Text");
+        const getCampaigns = await Airtable.getCampaigns("Email - Apollo");
+        let accounts = _.accountsToRun(getCampaigns);
 
-        const airtableRecords = await Airtable.formatAirtableContacts(contacts);
-        // console.log(airtableRecords);
-
-        let length = 18;
-        console.log(Math.round(airtableRecords.length / 10));
+        console.log(accounts);
     } catch (error) {
         console.log(error);
     }

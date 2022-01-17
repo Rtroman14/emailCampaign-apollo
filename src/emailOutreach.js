@@ -27,24 +27,51 @@ module.exports = async (account) => {
             // results === [ {contact:{}} ,{contact:{}}, {contact:{}} ]
             const createdContactResults = await Promise.all(arrayOfContactRequests);
 
-            const arrayOfContacts = createdContactResults.map((res) => res.contact);
-            const arrayOfIDs = arrayOfContacts.map((contact) => contact.id);
+            const contactsInList = createdContactResults.map((res) => res.contact);
+            const arrayOfIDs = createdContactResults.map((res) => res.contact.id);
 
-            // map id from apollo to airtable contacts
-            const airtableContactsWithID = contacts.map((contact) => {
-                let foundContact = arrayOfContacts.find(
-                    (apolloContact) => apolloContact.email === contact.Email
+            // res = contacts: [{..},{..}]
+            // send all contacts to sequence
+            const contactsInSequence = await Apollo.addContactsToSequence(
+                account["Campaign ID"],
+                arrayOfIDs,
+                account["Account ID"]
+            );
+
+            // update contacts on if they were added in sequence or not
+            const updateContacts = contacts.map((contact) => {
+                let contactInSequence = contactsInSequence.contacts.find(
+                    (sequenceContact) => sequenceContact.email === contact.Email
                 );
+
+                if (contactInSequence) {
+                    return {
+                        recordID: contact.recordID,
+                        id: contactInSequence.id,
+                        Campaign: account.Campaign,
+                        "In Campaign": true,
+                    };
+                }
+
+                let contactInList = contactsInList.find(
+                    (listContact) => listContact.email === contact.Email
+                );
+
+                if (contactInList) {
+                    return {
+                        recordID: contact.recordID,
+                        id: contactInList.id,
+                        Status: "Error",
+                    };
+                }
 
                 return {
                     recordID: contact.recordID,
-                    id: foundContact.id,
+                    Status: "Error",
                 };
             });
 
-            const airtableFormatedRecords = await Airtable.formatAirtableContacts(
-                airtableContactsWithID
-            );
+            const airtableFormatedRecords = await Airtable.formatAirtableContacts(updateContacts);
 
             // batch update contacts in AT with apollo id as id
             let batches = Math.ceil(airtableFormatedRecords.length / 10);
@@ -52,33 +79,6 @@ module.exports = async (account) => {
                 await Airtable.updateContacts(account["Base ID"], airtableFormatedRecords);
             }
 
-            // res = contacts: [{..},{..}]
-            // send all contacts to sequence
-            // const res = await Apollo.addContactsToSequence(
-            //     account["Campaign ID"],
-            //     arrayOfIDs,
-            //     account["Account ID"]
-            // );
-
-            // TODO: cross reference res with arrayOfIDS and update AT accordingly
-            const contactsAfterAddedToApollo = airtableContactsWithID.map((airtableContact) => {
-                const foundContact = res.filter((contact) => contact.id === airtableContact.id);
-
-                if (foundContact.length) {
-                    return {
-                        ...airtableContact,
-                        "In Campaign": true,
-                        Campagin: account.Campagin,
-                    };
-                }
-
-                return {
-                    ...airtableContact,
-                    Status: "Error",
-                };
-            });
-
-            // TODO: if succesfful
             return {
                 ...account,
                 status: "Live",
