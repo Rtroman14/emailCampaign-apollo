@@ -38,7 +38,7 @@ module.exports = async (account) => {
                 account["Account ID"]
             );
 
-            // update contacts on if they were added in sequence or not
+            // update contacts if they were added in sequence or not
             const updateContacts = contacts.map((contact) => {
                 let contactInSequence = contactsInSequence.contacts.find(
                     (sequenceContact) => sequenceContact.email === contact.Email
@@ -61,6 +61,7 @@ module.exports = async (account) => {
                     return {
                         recordID: contact.recordID,
                         id: contactInList.id,
+                        "In Campaign": true,
                         Status: "Error",
                     };
                 }
@@ -76,7 +77,11 @@ module.exports = async (account) => {
             // batch update contacts in AT with apollo id as id
             let batches = Math.ceil(airtableFormatedRecords.length / 10);
             for (let batch = 1; batch <= batches; batch++) {
-                await Airtable.updateContacts(account["Base ID"], airtableFormatedRecords);
+                await Airtable.updateRecords(
+                    account["Base ID"],
+                    "Prospects",
+                    airtableFormatedRecords
+                );
             }
 
             return {

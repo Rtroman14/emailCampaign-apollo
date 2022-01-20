@@ -5,6 +5,7 @@ const today = moment(new Date()).format("MM/DD/YYYY");
 
 const AirtableApi = require("./src/Airtable");
 const HighlevelApi = require("./src/Highlevel");
+const ApolloApi = require("./src/Apollo");
 
 const Airtable = new AirtableApi(process.env.AIRTABLE_API_KEY);
 
@@ -15,10 +16,10 @@ const emailOutreach = require("./src/emailOutreach");
 
 (async () => {
     try {
-        const getCampaigns = await Airtable.getCampaigns("Email - Apollo");
-        let accounts = _.accountsToRun(getCampaigns);
+        const Apollo = new ApolloApi(process.env.APOLLO_API_KEY);
 
-        console.log(accounts);
+        const res = await Apollo.rateLimits();
+        console.log(res);
     } catch (error) {
         console.log(error);
     }

@@ -83,7 +83,7 @@ module.exports = class AirtableApi {
 
             const res = await base("Prospects")
                 .select({
-                    maxRecords: 2,
+                    maxRecords: 20,
                     // filterByFormula: "({Mailshake Ready} = 1)",
                     view,
                 })
@@ -111,13 +111,13 @@ module.exports = class AirtableApi {
         }
     }
 
-    async updateContacts(baseID, records) {
+    async updateRecords(baseID, baseName, records) {
         try {
             const base = await this.assignAirtable(baseID);
 
-            await base("Prospects").update(records);
+            await base(baseName).update(records);
         } catch (error) {
-            console.log("updateContacts() ---", error);
+            console.log("updateRecords() ---", error);
         }
     }
 

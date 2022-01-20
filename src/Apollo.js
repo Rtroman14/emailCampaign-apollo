@@ -54,6 +54,17 @@ module.exports = class ApolloApi {
         }
     };
 
+    rateLimits = async () => {
+        try {
+            const data = await axios(`https://api.apollo.io/v1/auth/health?api_key=${this.apiKey}`);
+
+            return data;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    };
+
     makeContact = (contact, account) => ({
         api_key: this.apiKey,
         label_names: contact.Source ? [`${account} - ${contact.Source}`] : [`${account} - Reonomy`],

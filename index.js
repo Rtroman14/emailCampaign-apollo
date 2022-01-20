@@ -11,8 +11,6 @@ const _ = new HelperApi();
 
 const emailOutreach = require("./src/emailOutreach");
 
-const today = moment(new Date()).format("MM/DD/YYYY");
-
 exports.emailCampaignApollo = async (req, res) => {
     try {
         const getCampaigns = await Airtable.getCampaigns("Email - Apollo");
@@ -23,25 +21,27 @@ exports.emailCampaignApollo = async (req, res) => {
         // results = [{...account, status: "..."}]
         const results = await Promise.all(arrayEmailOutreach);
 
-        const updateAccounts = results.map((acc) => ({
-            recordID: acc.recordID,
-            Status: acc.status,
-            "Last Updated": today,
-        }));
+        const updateAccounts = results.map((acc) => {
+            if (acc.status === "Live") {
+                return {
+                    recordID: acc.recordID,
+                    "Campaign Status": acc.status,
+                    "Last Updated": today,
+                };
+            }
+
+            return {
+                recordID: acc.recordID,
+                "Campaign Status": acc.status,
+            };
+        });
 
         const airtableFormatedRecords = await Airtable.formatAirtableContacts(updateAccounts);
 
         let batches = Math.ceil(airtableFormatedRecords.length / 10);
         for (let batch = 1; batch <= batches; batch++) {
-            await Airtable.updateContacts("appGB7S9Wknu6MiQb", airtableFormatedRecords);
+            await Airtable.updateRecords("appGB7S9Wknu6MiQb", "Campaigns", airtableFormatedRecords);
         }
-
-        // for (let result of results) {
-        //     await Airtable.updateCampaign(result.recordID, {
-        //         "Campaign Status": result.status,
-        //         "Last Updated": today,
-        //     });
-        // }
 
         // res.status(200).send(results);
     } catch (error) {
