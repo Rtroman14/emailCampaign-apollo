@@ -38,15 +38,21 @@ exports.emailCampaignApollo = async (req, res) => {
 
         const airtableFormatedRecords = await Airtable.formatAirtableContacts(updateAccounts);
 
+        let maxBatch = 10;
+
         let batches = Math.ceil(airtableFormatedRecords.length / 10);
         for (let batch = 1; batch <= batches; batch++) {
-            await Airtable.updateRecords("appGB7S9Wknu6MiQb", "Campaigns", airtableFormatedRecords);
+            await Airtable.updateRecords(
+                "appGB7S9Wknu6MiQb",
+                "Campaigns",
+                airtableFormatedRecords.slice(0, maxBatch)
+            );
         }
 
-        // res.status(200).send(results);
+        res.status(200).send(results);
     } catch (error) {
         console.log("emailCampaignApollo ---", error);
-        // res.status(500).send(error);
+        res.status(500).send(error);
     }
 };
 

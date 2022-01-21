@@ -16,10 +16,21 @@ const emailOutreach = require("./src/emailOutreach");
 
 (async () => {
     try {
-        const Apollo = new ApolloApi(process.env.APOLLO_API_KEY);
+        let contacts = await Airtable.getContacts("appsqByR9Lsaylcd3", "Email");
 
-        const res = await Apollo.rateLimits();
-        console.log(res);
+        const airtableFormatedRecords = await Airtable.formatAirtableContacts(contacts);
+
+        console.log(airtableFormatedRecords.length);
+
+        let maxBatch = 10;
+
+        // batch update contacts in AT with apollo id as id
+        let batches = Math.ceil(airtableFormatedRecords.length / maxBatch);
+        for (let batch = 1; batch <= batches; batch++) {
+            let test = airtableFormatedRecords.splice(0, maxBatch);
+
+            console.log(test.length);
+        }
     } catch (error) {
         console.log(error);
     }

@@ -74,13 +74,15 @@ module.exports = async (account) => {
 
             const airtableFormatedRecords = await Airtable.formatAirtableContacts(updateContacts);
 
+            let maxBatch = 10;
+
             // batch update contacts in AT with apollo id as id
-            let batches = Math.ceil(airtableFormatedRecords.length / 10);
+            let batches = Math.ceil(airtableFormatedRecords.length / maxBatch);
             for (let batch = 1; batch <= batches; batch++) {
                 await Airtable.updateRecords(
                     account["Base ID"],
                     "Prospects",
-                    airtableFormatedRecords
+                    airtableFormatedRecords.splice(0, maxBatch)
                 );
             }
 
