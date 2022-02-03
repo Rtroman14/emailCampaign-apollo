@@ -16,21 +16,25 @@ const emailOutreach = require("./src/emailOutreach");
 
 (async () => {
     try {
-        let contacts = await Airtable.getContacts("appsqByR9Lsaylcd3", "Email");
+        // let contacts = await Airtable.getContacts("appsqByR9Lsaylcd3", "Email");
 
-        const airtableFormatedRecords = await Airtable.formatAirtableContacts(contacts);
+        // const airtableFormatedRecords = await Airtable.formatAirtableContacts(contacts);
 
-        console.log(airtableFormatedRecords.length);
+        // console.log(airtableFormatedRecords.length);
 
-        let maxBatch = 10;
+        // let maxBatch = 10;
 
-        // batch update contacts in AT with apollo id as id
-        let batches = Math.ceil(airtableFormatedRecords.length / maxBatch);
-        for (let batch = 1; batch <= batches; batch++) {
-            let test = airtableFormatedRecords.splice(0, maxBatch);
+        // // batch update contacts in AT with apollo id as id
+        // let batches = Math.ceil(airtableFormatedRecords.length / maxBatch);
+        // for (let batch = 1; batch <= batches; batch++) {
+        //     let test = airtableFormatedRecords.splice(0, maxBatch);
 
-            console.log(test.length);
-        }
+        //     console.log(test.length);
+        // }
+
+        const Apollo = new ApolloApi("w8O5ftfstUDBm1FoFcRdug");
+        const res = await Apollo.lists();
+        console.log(res);
     } catch (error) {
         console.log(error);
     }

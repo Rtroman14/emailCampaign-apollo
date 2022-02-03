@@ -54,6 +54,17 @@ module.exports = class ApolloApi {
         }
     };
 
+    lists = async () => {
+        try {
+            const { data } = await axios(`https://api.apollo.io/v1/labels?api_key=${this.apiKey}`);
+
+            return data;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    };
+
     rateLimits = async () => {
         try {
             const data = await axios(`https://api.apollo.io/v1/auth/health?api_key=${this.apiKey}`);
